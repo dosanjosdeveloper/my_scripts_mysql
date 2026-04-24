@@ -1,3 +1,44 @@
+-- Versão Funcional com alguns austes especiais
+LOAD DATA INFILE 'C:/Users/rafael.anjos/Desktop/DDA_Discovery/arquivo.csv'
+INTO TABLE dda_find_notfind
+CHARACTER SET utf8mb4
+FIELDS TERMINATED BY ';'
+ENCLOSED BY '"'
+LINES TERMINATED BY '\r\n'
+IGNORE 1 ROWS
+(
+    IMPORTACAO,
+    @IMPORTADO_EM,
+    ENCONTRADO,
+    DOCUMENTO_TITULO,
+    @VALOR_DOCUMENTO,
+    @VENCIMENTO,
+    @CPF_CNPJ_DOC_DDA,
+    FORNECEDOR_EMISSOR,
+    @EMITIDO_EM,
+    CODIGO_BARRAS,
+    FINALIZADO,
+    TIPOVINCULO,
+    USUALTERACAO,
+    USUIMPORTACAO
+)
+SET
+    -- Datas convertidas corretamente
+    IMPORTADO_EM = STR_TO_DATE(@IMPORTADO_EM, '%d/%m/%Y'),
+    VENCIMENTO   = STR_TO_DATE(@VENCIMENTO, '%d/%m/%Y'),
+    EMITIDO_EM   = STR_TO_DATE(@EMITIDO_EM, '%d/%m/%Y'),
+
+    -- Valor monetário (padrão BR -> padrão SQL)
+    VALOR_DOCUMENTO = CAST(REPLACE(@VALOR_DOCUMENTO, ',', '.') AS DECIMAL(15,2)),
+
+    -- Limpeza de CPF/CNPJ (remove prefixo e espaços)
+    CPF_CNPJ_DOC_DDA = TRIM(
+        REPLACE(
+            REPLACE(@CPF_CNPJ_DOC_DDA, 'CNPJ:', ''),
+        'CPF:', '')
+    );
+
+-- DEPRECIADO - RETORNANDO DATAS INCORRETAS - CULPA DO PROGRAMADOR
 -- Imnportação de arquivos de dados direto de um arquivo csv
 LOAD DATA INFILE 'C:/Users/rafael.anjos/Desktop/DDA_Discovery/arquivo.csv'
 INTO TABLE dda_find_notfind
